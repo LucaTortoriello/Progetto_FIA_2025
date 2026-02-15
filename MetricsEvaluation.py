@@ -122,6 +122,7 @@ class MetricsEvaluator:
         y_true_sorted = self.Y_true[desc_indices]
         y_scores_sorted = self.Y_scores[desc_indices]
 
+
         # Quanti positivi (4) e negativi (2) ci sono in tutto?
         P_total = np.sum(self.Y_true == self.pos_label)
         N_total = np.sum(self.Y_true == self.neg_label)
