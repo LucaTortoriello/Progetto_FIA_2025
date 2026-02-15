@@ -30,7 +30,7 @@ def holdout(X,
     indices = np.arange(n_samples)
     np.random.shuffle(indices)
 
-    # Calcola il punto di taglio basandosi sulla percentuale del test set richiesta.
+    # Calcola il punto di taglio di fine test set e inizio training set
     split_point = int(n_samples * (1 - test_size))
 
     # Suddivide gli indici mescolati in due gruppi: training set e test set.

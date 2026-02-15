@@ -16,7 +16,7 @@ def bootstrap(X: pd.DataFrame,
     Y = np.array(Y)
     n_samples = X.shape[0]  # Numero totale di campioni nel dataset originale.
 
-    dataset_split = []
+    dataset_split = [] #tupla inizializzata
     
     # Genera 'k' diversi set di addestramento e test.
     for i in range(k):
