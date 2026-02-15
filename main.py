@@ -176,12 +176,11 @@ def compute_k_optimal(method_name, X, Y, params, splits=None, k_max=30):
         return best_k, best_acc
 
     if method_name == "bootstrap":
-        val_size = 0.30
         best_k, best_acc = opt.K_bootstrap(
             n_boot=params["k_boot"],
             random_state=params["seed"],
             splits=splits,
-            test_size=val_size
+            test_size=params["test_size"]
         )
         return best_k, best_acc
 
