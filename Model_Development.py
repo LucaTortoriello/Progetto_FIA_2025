@@ -9,13 +9,13 @@ class KNN_Classifier:
         # Inizializza il numero di vicini da considerare
         self.K = K
 
-    def fit(self, X_train, Y_train):
-        # Salva i dati di addestramento. .
+    def fit(self, X_train, Y_train): 
+        # Salva i dati di addestramento. 
         self.X_train = np.array(X_train)
         # Assicura che le etichette siano in un formato monodimensionale.
         self.Y_train = np.array(Y_train).flatten()
 
-    def predict(self, X_test):
+    def predict(self, X_test): 
         # Converte l'input di test in array numpy per il calcolo delle distanze.
         X_test = np.array(X_test)
         predictions = []
@@ -68,7 +68,7 @@ class KNN_Classifier:
             X_test = [X_test]
 
         for sample in X_test:
-            # Calcola nuovamente le distanze Euclidee.
+            # Calcola nuovamente le distanze Euclidee
             dists = np.linalg.norm(self.X_train - sample, axis=1)
 
             # Crea le coppie (distanza, etichetta) e le ordina per vicinanza.
