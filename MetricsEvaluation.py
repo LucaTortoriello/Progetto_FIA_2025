@@ -111,38 +111,62 @@ class MetricsEvaluator:
         ax.set_xlim(-0.6, 1.6); ax.set_ylim(1.6, -0.6)
         plt.show()
 
-    def plot_roc_curve(self):
+def plot_roc_curve(self):
         """Disegna la curva ROC e calcola l'area (AUC)"""
+        # Controllo di sicurezza: se non abbiamo le probabilità (scores), non possiamo variare la soglia
         if self.Y_scores is None:
             print("Errore: Servono gli 'scores' (probabilità) per fare la ROC!")
             return 0.0
 
-        # 1. Ordiniamo i campioni dal più "probabile 4" al meno probabile
+        # --- 1. PREPARAZIONE DEI DATI ---
+        
+        # Ordiniamo gli indici in base ai punteggi in modo decrescente [::-1]
+        # Vogliamo analizzare prima i campioni che il modello "crede" siano positivi con più forza
         desc_indices = np.argsort(self.Y_scores)[::-1]
+        
+        # Riapplichiamo l'ordine sia alle etichette reali che ai punteggi
         y_true_sorted = self.Y_true[desc_indices]
         y_scores_sorted = self.Y_scores[desc_indices]
 
-
-        # Quanti positivi (4) e negativi (2) ci sono in tutto?
+        # Contiamo quanti positivi (classe 4) e negativi (classe 2) esistono in totale.
+        # Questi saranno i nostri "valori massimi" per normalizzare gli assi tra 0 e 1.
         P_total = np.sum(self.Y_true == self.pos_label)
         N_total = np.sum(self.Y_true == self.neg_label)
 
-        # Liste per salvare le coordinate (X, Y) del grafico
-        tpr_list = [0.0]; fpr_list = [0.0]
-        tp_count = 0; fp_count = 0
+        # Inizializziamo le liste delle coordinate (X=FPR, Y=TPR) partendo dall'origine (0,0)
+        tpr_list = [0.0]
+        fpr_list = [0.0]
+        
+        # Contatori cumulativi per i Veri Positivi e Falsi Positivi trovati durante la scansione
+        tp_count = 0
+        fp_count = 0
 
-        # 2. Scendiamo lungo la lista (abbassando la soglia di decisione)
+        # --- 2. SCANSIONE DEI CAMPIONI ---
+        
+        # Scorriamo tutti i campioni ordinati. In ogni iterazione è come se abbassassimo 
+        # la soglia di classificazione per includere il campione corrente.
         for i in range(len(y_scores_sorted)):
             if y_true_sorted[i] == self.pos_label:
-                tp_count += 1  # Trovato un positivo -> la curva sale (Y)
+                # Se il campione corrente è davvero positivo, incrementiamo il contatore Y
+                tp_count += 1  
             else:
-                fp_count += 1  # Trovato un negativo -> la curva va a destra (X)
+                # Se è un negativo (ma lo stiamo includendo come positivo), incrementiamo il contatore X
+                fp_count += 1  
 
-            # Se il prossimo ha lo stesso score, non aggiungere il punto ora
+            # GESTIONE DEI PARI MERITO:
+            # Se il prossimo campione ha lo stesso punteggio di quello attuale, non aggiungiamo 
+            # ancora un punto al grafico. Aspettiamo di averli processati tutti per evitare
+            # di creare scalini artificiali quando la soglia non è distinguibile.
             if i == len(y_scores_sorted) - 1 or y_scores_sorted[i] != y_scores_sorted[i + 1]:
-                tpr_list.append(tp_count / P_total if P_total > 0 else 0)
-                fpr_list.append(fp_count / N_total if N_total > 0 else 0)
-
+                
+                # Calcoliamo il True Positive Rate (Sensitivity): TP trovati / Totale Positivi
+                tpr = tp_count / P_total if P_total > 0 else 0
+                
+                # Calcoliamo il False Positive Rate (1-Specificity): FP trovati / Totale Negativi
+                fpr = fp_count / N_total if N_total > 0 else 0
+                
+                tpr_list.append(tpr)
+                fpr_list.append(fpr)
         # 3. Calcolo AUC (Area sotto la curva) con la regola del trapezio
         auc = 0.0
         for i in range(1, len(fpr_list)):
